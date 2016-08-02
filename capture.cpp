@@ -48,6 +48,13 @@ int num_of_cpus;
 cpu_set_t cpu_set; // Set of cpu sets
 cpu_set_t thread_cpu; 
 
+// Global shared data
+IplImage* frame;
+
+// Global Mutex declarations
+pthread_mutex_t sem_frame;
+pthread_mutexattr_t mutex_attr;
+
 void getStartTimeLog(void) {
 	clock_gettime(CLOCK_REALTIME, &start_time);
 	printf("Start Sec:%ld, Nsec:%ld\n", start_time.tv_sec, start_time.tv_nsec);
@@ -89,26 +96,27 @@ void *CAPTURE_FRAME(void *thread_id)
     // Set up image capture service
     cvNamedWindow("Motion Detection Time Lapse", CV_WINDOW_AUTOSIZE);
     CvCapture* capture = cvCreateCameraCapture(0); 
-    IplImage* frame; 
-
     cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, HRES);
     cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, VRES);
 
     while(1)
     {
+        // Lock, acquire frame, unlock
+        pthread_mutex_lock(&sem_frame);
         frame = cvQueryFrame(capture);
-     
+        pthread_mutex_unlock(&sem_frame);
         if(!frame) break;
         else {
+           // Start getting real time timestamps for fps
            clock_gettime(CLOCK_REALTIME, &frame_time);
-           curr_frame_time=((double)frame_time.tv_sec * 1000.0) + 
+           curr_frame_time = ((double)frame_time.tv_sec * 1000.0) + 
                                 ((double)((double)frame_time.tv_nsec / 1000000.0));
            frame_count++;
 
            if(frame_count > 2) {
-                 fc=(double)frame_count;
-                 ave_framedt=((fc-1.0)*ave_framedt + framedt)/fc;
-                 ave_frame_rate=1.0/(ave_framedt/1000.0);
+                 fc = (double)frame_count;
+                 ave_framedt = ((fc-1.0)*ave_framedt + framedt)/fc;
+                 ave_frame_rate = 1.0/(ave_framedt/1000.0);
            }
         }
 
@@ -234,6 +242,9 @@ int main(void)
     // Forward declaration of return code
     int rc, i; 
     
+    // Initialize mutex
+    pthread_mutex_init(&sem_frame, NULL); // Initialize mutex
+
     set_up_affinity(); // Function call pin cpu & set affinity
 
     // Create executive service thread for SCHED_FIFO to kick off tasks
