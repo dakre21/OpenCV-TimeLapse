@@ -1,0 +1,6 @@
+#ignore the following
+*.cpp~
+*.c~
+*.h~
+*Makefile~
+*.md~

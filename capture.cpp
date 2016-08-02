@@ -21,6 +21,12 @@ using namespace std;
 #define SAVE_FRAME_ID 7
 #define NUM_THREADS 7
 
+// Global variables
+void *raw_img_buff;
+void *cached_img_buff;
+double sec;
+double nsec;
+
 // Forward declaration of thread attributes 
 pthread_t threads[NUM_THREADS];
 pthread_attr_t rt_sched_attr[NUM_THREADS];
@@ -31,16 +37,59 @@ int rt_max_prio, rt_min_prio;
 struct timespec frame_time;
 double curr_frame_time, prev_frame_time;
 
+// Sleep attributes
+static struct timespec sleep_time = {0, 962500000}; // 962.5ms (~30 sec for fps to drop, jitter about +-15ms)
+static struct timespec remaining_time = {0, 0};
+static struct timespec start_time = {0, 0}; // Start timestamp for log
+static struct timespec stop_time = {0, 0}; // Stop timestamp for log
+
 // Set up affinity info
 int num_of_cpus;
 cpu_set_t cpu_set; // Set of cpu sets
 cpu_set_t thread_cpu; 
 
+void getStartTimeLog(void) {
+	clock_gettime(CLOCK_REALTIME, &start_time);
+	printf("Start Sec:%ld, Nsec:%ld\n", start_time.tv_sec, start_time.tv_nsec);
+}
+
+void getStopTimeLog(void) {
+	clock_gettime(CLOCK_REALTIME, &stop_time);
+	printf("Stop Sec:%ld, Nsec:%ld\n", stop_time.tv_sec, stop_time.tv_nsec);
+}
+
+void getDelta(void) {
+	struct timespec start;
+	struct timespec stop;
+	start = start_time;
+	stop = stop_time;
+	int diff_nsec = stop.tv_nsec - start.tv_nsec;
+	if (diff_nsec < 0) {
+		diff_nsec = 1000000000 + diff_nsec;
+	}
+	printf("Delta nanosec: %ld\n", diff_nsec);
+	printf("Delta microsec: %ld\n", diff_nsec / 1000);
+	printf("Delta millisec: %ld\n\n", diff_nsec / 1000000);
+}
+
+void idleState(void) {
+	getStartTimeLog();
+	nanosleep(&sleep_time, &remaining_time);
+	getStopTimeLog();
+	getDelta();
+}
+
+// Entry point for capture frame service = S1 (highest prio)
 void *CAPTURE_FRAME(void *thread_id)
 {
+    // used to compute running averages for single camera frame rates
+    double ave_framedt = 0.0, ave_frame_rate = 0.0, fc = 0.0, framedt = 0.0;
+    unsigned int frame_count = 0;
+
+    // Set up image capture service
     cvNamedWindow("Motion Detection Time Lapse", CV_WINDOW_AUTOSIZE);
-    CvCapture* capture = cvCreateCameraCapture(0);
-    IplImage* frame;
+    CvCapture* capture = cvCreateCameraCapture(0); 
+    IplImage* frame; 
 
     cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, HRES);
     cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, VRES);
@@ -50,10 +99,26 @@ void *CAPTURE_FRAME(void *thread_id)
         frame = cvQueryFrame(capture);
      
         if(!frame) break;
+        else {
+           clock_gettime(CLOCK_REALTIME, &frame_time);
+           curr_frame_time=((double)frame_time.tv_sec * 1000.0) + 
+                                ((double)((double)frame_time.tv_nsec / 1000000.0));
+           frame_count++;
+
+           if(frame_count > 2) {
+                 fc=(double)frame_count;
+                 ave_framedt=((fc-1.0)*ave_framedt + framedt)/fc;
+                 ave_frame_rate=1.0/(ave_framedt/1000.0);
+           }
+        }
 
         cvShowImage("Motion Detection Time Lapse", frame);
+        printf("Frame @ %u sec, %lu nsec, dt=%5.2lf msec, avedt=%5.2lf msec, rate=%5.2lf fps\n", (unsigned)frame_time.tv_sec, (unsigned long)frame_time.tv_nsec, framedt, ave_framedt, ave_frame_rate);
 
-        char c = cvWaitKey(33);
+        char c = cvWaitKey(10);
+        idleState();
+        framedt = curr_frame_time - prev_frame_time;
+        prev_frame_time = curr_frame_time;
         if( c == 27 ) break;
     }
 
@@ -62,6 +127,7 @@ void *CAPTURE_FRAME(void *thread_id)
     return NULL;
 }
 
+// Entry point for executive service to kick off services
 void *EXECUTIVE_SERVICE(void *thread_id)
 {
     int i, core_id, rc;
@@ -146,6 +212,7 @@ void *EXECUTIVE_SERVICE(void *thread_id)
     return NULL;
 }
 
+// Helper function to set affinity for CPU processors
 void set_up_affinity(void)
 {
     // Forward declaration of core affinity 
@@ -161,12 +228,14 @@ void set_up_affinity(void)
         
 }
 
+// Main entry point to Time Lapse program-- spawn executive service
 int main(void)
 {
     // Forward declaration of return code
     int rc, i; 
     
     set_up_affinity(); // Function call pin cpu & set affinity
+
     // Create executive service thread for SCHED_FIFO to kick off tasks
     rt_max_prio = sched_get_priority_max(SCHED_FIFO); // Give ES max prio
     rt_min_prio = sched_get_priority_min(SCHED_FIFO); // Give ES min prio
@@ -183,6 +252,7 @@ int main(void)
                    (void *)EXECUTIVE_SERVICE_ID
                    ); // Create new thread
 
+    // Error checking for pthread creation
     if (rc) 
     {
        printf("ERROR; pthread_create() rc is %d\n", rc);
@@ -190,6 +260,7 @@ int main(void)
        exit(-1);
     }
 
+    // Loop through exeucting threads to join in execution upon program exit
     for(i = 0; i < NUM_THREADS; i++)
     {
         if(pthread_join(threads[i], NULL) == 0) 
