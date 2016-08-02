@@ -10,12 +10,14 @@ extern pthread_mutexattr_t mutex_attr;
 
 void *CONVERT_FRAME(void *thread_id)
 {
-    Mat bgr_frame;
-    // Lock, modify frame, unlock
-    pthread_mutex_lock(&sem_frame);
-    bgr_frame = cvarrToMat(frame);
-    cvtColor(bgr_frame, rgb_frame, CV_BGR2RGB); // BGR to RGB PPM ASCII 
-    pthread_mutex_unlock(&sem_frame);
-
+    while(1) 
+    {
+        Mat bgr_frame;
+        // Lock, modify frame, unlock
+        pthread_mutex_lock(&sem_frame);
+        bgr_frame = cvarrToMat(frame);
+        cvtColor(bgr_frame, rgb_frame, CV_BGR2RGB); // BGR to RGB PPM ASCII 
+        pthread_mutex_unlock(&sem_frame);
+    }
     return NULL;
 }

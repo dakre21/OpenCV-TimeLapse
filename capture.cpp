@@ -38,10 +38,11 @@ struct timespec frame_time;
 double curr_frame_time, prev_frame_time;
 
 // Sleep attributes
-static struct timespec sleep_time = {0, 962500000}; // 962.5ms (~30 sec for fps to drop, jitter about +-15ms)
-static struct timespec remaining_time = {0, 0};
-static struct timespec start_time = {0, 0}; // Start timestamp for log
-static struct timespec stop_time = {0, 0}; // Stop timestamp for log
+struct timespec sleep_time_cap = {0, 962500000}; // 962.5ms (~30 sec for fps to drop, jitter about +-15ms)
+struct timespec remaining_time_cap = {0, 0};
+// Time attributes
+struct timespec start_time_cap = {0, 0}; // Start timestamp for log
+struct timespec stop_time_cap = {0, 0}; // Stop timestamp for log
 
 // Set up affinity info
 int num_of_cpus;
@@ -54,37 +55,6 @@ IplImage* frame;
 // Global Mutex declarations
 pthread_mutex_t sem_frame;
 pthread_mutexattr_t mutex_attr;
-
-void getStartTimeLog(void) {
-	clock_gettime(CLOCK_REALTIME, &start_time);
-	printf("Start Sec:%ld, Nsec:%ld\n", start_time.tv_sec, start_time.tv_nsec);
-}
-
-void getStopTimeLog(void) {
-	clock_gettime(CLOCK_REALTIME, &stop_time);
-	printf("Stop Sec:%ld, Nsec:%ld\n", stop_time.tv_sec, stop_time.tv_nsec);
-}
-
-void getDelta(void) {
-	struct timespec start;
-	struct timespec stop;
-	start = start_time;
-	stop = stop_time;
-	int diff_nsec = stop.tv_nsec - start.tv_nsec;
-	if (diff_nsec < 0) {
-		diff_nsec = 1000000000 + diff_nsec;
-	}
-	printf("Delta nanosec: %ld\n", diff_nsec);
-	printf("Delta microsec: %ld\n", diff_nsec / 1000);
-	printf("Delta millisec: %ld\n\n", diff_nsec / 1000000);
-}
-
-void idleState(void) {
-	getStartTimeLog();
-	nanosleep(&sleep_time, &remaining_time);
-	getStopTimeLog();
-	getDelta();
-}
 
 // Entry point for capture frame service = S1 (highest prio)
 void *CAPTURE_FRAME(void *thread_id)
@@ -124,7 +94,7 @@ void *CAPTURE_FRAME(void *thread_id)
         printf("Frame @ %u sec, %lu nsec, dt=%5.2lf msec, avedt=%5.2lf msec, rate=%5.2lf fps\n", (unsigned)frame_time.tv_sec, (unsigned long)frame_time.tv_nsec, framedt, ave_framedt, ave_frame_rate);
 
         char c = cvWaitKey(10);
-        idleState();
+        idleState(sleep_time_cap, remaining_time_cap, start_time_cap, stop_time_cap);
         framedt = curr_frame_time - prev_frame_time;
         prev_frame_time = curr_frame_time;
         if( c == 27 ) break;

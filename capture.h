@@ -11,6 +11,7 @@
 #include <opencv2/highgui/highgui.hpp>
 
 using namespace cv;
+using namespace std;
 
 // Services callback functions declarations
 void *CAPTURE_FRAME(void *thread_id);
@@ -19,4 +20,10 @@ void *CONVERT_FRAME(void *thread_id);
 void *EDIT_HDR_FRAME(void *thread_id);
 void *COMPRESS_FRAME(void *thread_id);
 void *SAVE_FRAME(void *thread_id);
+
+// Helper time keeper
+void idleState(struct timespec sleep_time, 
+                    struct timespec remaining_time, 
+                    struct timespec start_time,
+                    struct timespec stop_time);
 

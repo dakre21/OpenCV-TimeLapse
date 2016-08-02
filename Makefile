@@ -9,8 +9,8 @@ CPPLIBS= -L/usr/lib -lopencv_core -lopencv_flann -lopencv_video
 
 HFILES= capture.h
 CFILES= 
-CPPFILES= motion_detection.cpp compress_frame.cpp convert_frame.cpp edit_hdr_frame.cpp save_frame.cpp capture.cpp
-LINK= motion_detection.cpp compress_frame.cpp convert_frame.cpp edit_hdr_frame.cpp save_frame.cpp
+CPPFILES= motion_detection.cpp compress_frame.cpp convert_frame.cpp edit_hdr_frame.cpp save_frame.cpp time_logger.cpp capture.cpp
+LINK= motion_detection.cpp compress_frame.cpp convert_frame.cpp edit_hdr_frame.cpp save_frame.cpp time_logger.cpp
 
 SRCS= ${HFILES} ${CFILES}
 CPPOBJS= ${CPPFILES:.cpp=.o}
