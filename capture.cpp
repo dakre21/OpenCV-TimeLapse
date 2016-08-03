@@ -174,13 +174,6 @@ void *EXECUTIVE_SERVICE(void *thread_id)
                        COMPRESS_FRAME, // thread function entry point
                        (void *)COMPRESS_FRAME_ID); // parameters to pass in
         }
-        else if (i == 5)
-        {
-            rc = pthread_create(&threads[i],   // pointer to thread descriptor
-                       &rt_sched_attr[0],     // use default attributes
-                       SAVE_FRAME, // thread function entry point
-                       (void *)SAVE_FRAME_ID); // parameters to pass in
-        }
 
         if (rc) 
         {
