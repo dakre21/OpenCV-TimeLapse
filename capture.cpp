@@ -90,7 +90,7 @@ void *CAPTURE_FRAME(void *thread_id)
         printf("Frame @ %u sec, %lu nsec, dt=%5.2lf msec, avedt=%5.2lf msec, rate=%5.2lf fps\n", (unsigned)frame_time.tv_sec, (unsigned long)frame_time.tv_nsec, framedt, ave_framedt, ave_frame_rate);
 
         char c = cvWaitKey(10);
-        idleState(sleep_time_cap, remaining_time_cap, start_time_cap, stop_time_cap);
+        idleState(sleep_time_cap, remaining_time_cap, start_time_cap, stop_time_cap, thread_id);
         framedt = curr_frame_time - prev_frame_time;
         prev_frame_time = curr_frame_time;
         if( c == 27 ) return NULL;

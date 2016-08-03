@@ -24,5 +24,6 @@ void *COMPRESS_FRAME(void *thread_id);
 void idleState(struct timespec sleep_time, 
                     struct timespec remaining_time, 
                     struct timespec start_time,
-                    struct timespec stop_time);
+                    struct timespec stop_time,
+                    void *thread_id);
 

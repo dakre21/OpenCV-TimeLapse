@@ -18,7 +18,7 @@ void *COMPRESS_FRAME(void *thread_id)
     FILE *comp_file;
     while(1)
     {
-        idleState(sleep_time_comp, remaining_time_comp, start_time_comp, stop_time_comp);
+        idleState(sleep_time_comp, remaining_time_comp, start_time_comp, stop_time_comp, thread_id);
         // Lock, modify file, unlock
         pthread_mutex_lock(&sem_frame);
 

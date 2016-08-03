@@ -24,7 +24,7 @@ void *EDIT_HDR_FRAME(void *thread_id)
     FILE *file;
     while(1)
     {
-        idleState(sleep_time_hdr, remaining_time_hdr, start_time_hdr, stop_time_hdr);
+        idleState(sleep_time_hdr, remaining_time_hdr, start_time_hdr, stop_time_hdr, thread_id);
         // Lock, modify frame, unlock
         pthread_mutex_lock(&sem_frame);
         file = fopen(curr_file, "a"); // Tried "r+" to pre-append data to header.. did not work

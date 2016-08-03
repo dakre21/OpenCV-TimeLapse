@@ -21,7 +21,7 @@ void *CONVERT_FRAME(void *thread_id)
 {
     while(1) 
     {
-        idleState(sleep_time_conv, remaining_time_conv, start_time_conv, stop_time_conv);
+        idleState(sleep_time_conv, remaining_time_conv, start_time_conv, stop_time_conv, thread_id);
         if (!bgr_frame.empty())
         {
             // Lock, modify frame, unlock

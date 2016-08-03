@@ -16,21 +16,21 @@ struct timespec stop_time_md = {0, 0}; // Stop timestamp for log
 Mat cached_frame;
 void *MOTION_DETECTION(void *thread_id)
 {
-    Mat gray_cached, gray_new, cp_bgr_frame;
+    Mat gray_cached, gray_new;
     while(1)
     {
-        idleState(sleep_time_md, remaining_time_md, start_time_md, stop_time_md);
+        idleState(sleep_time_md, remaining_time_md, start_time_md, stop_time_md, thread_id);
         // Lock, modify file, unlock
         pthread_mutex_lock(&sem_frame);
         if (!bgr_frame.empty() && !cached_frame.empty()) 
         {
             // Convert frames to grayscale
-            cp_bgr_frame = bgr_frame;
             cvtColor(cached_frame, gray_cached, CV_BGR2GRAY);
-            cvtColor(cp_bgr_frame, gray_new, CV_BGR2GRAY);
+            cvtColor(bgr_frame, gray_new, CV_BGR2GRAY);
             // Take difference and threshold between mid range color scale
             Mat result = gray_new - gray_cached;
             int count = countNonZero(result);
+            cout << count << endl;
             //double threshold_value = threshold(result, result, 50, 255, CV_THRESH_BINARY);
             // Calculate if diff is greater than 2%, if so motion detected
             double diff = count / 307200;
@@ -39,8 +39,16 @@ void *MOTION_DETECTION(void *thread_id)
                 printf("Motion Detected\n"); // set global flag here
             }
         }
-        // Set cached frame to bgr frame
-        cached_frame = bgr_frame;
+        else if (bgr_frame.empty())
+        {
+            // bgr_frame not allocated.. continue
+            continue;
+        }
+        else 
+        {
+            // Set cached frame to bgr frame
+            cached_frame = bgr_frame;
+        }
         pthread_mutex_unlock(&sem_frame);
     }
     return NULL;
