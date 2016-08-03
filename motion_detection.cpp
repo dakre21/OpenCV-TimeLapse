@@ -30,10 +30,8 @@ void *MOTION_DETECTION(void *thread_id)
             // Take difference and threshold between mid range color scale
             Mat result = gray_new - gray_cached;
             int count = countNonZero(result);
-            cout << count << endl;
-            //double threshold_value = threshold(result, result, 50, 255, CV_THRESH_BINARY);
             // Calculate if diff is greater than 2%, if so motion detected
-            double diff = count / 307200;
+            double diff = count / sizeof(result);
             if (diff >= 0.02)
             {
                 printf("Motion Detected\n"); // set global flag here
@@ -47,7 +45,7 @@ void *MOTION_DETECTION(void *thread_id)
         else 
         {
             // Set cached frame to bgr frame
-            cached_frame = bgr_frame;
+            cached_frame = bgr_frame.clone();
         }
         pthread_mutex_unlock(&sem_frame);
     }
