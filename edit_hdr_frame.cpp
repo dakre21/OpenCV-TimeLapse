@@ -29,12 +29,12 @@ void *EDIT_HDR_FRAME(void *thread_id)
         idleState(sleep_time_hdr, remaining_time_hdr, start_time_hdr, stop_time_hdr);
         // Lock, modify frame, unlock
         pthread_mutex_lock(&sem_frame);
-        file = fopen(curr_file, "r+");
+        file = fopen(curr_file, "a"); // Tried "r+" to pre-append data to header.. did not work
         if (file != NULL)
         {
-            fseek(file, 0, SEEK_SET);
-            //fprintf(file, "# Frame @ %u sec, %u msec, %lu nsec\n", (unsigned)frame_time.tv_sec, (unsigned)frame_time.tv_sec / 1000000, (unsigned long)frame_time.tv_nsec);
-            //fprintf(file, "%s\n", hostname);
+            //fseek(file, 0, SEEK_SET);
+            fprintf(file, "# Frame @ %u sec, %u msec, %lu nsec\n", (unsigned)frame_time.tv_sec, (unsigned)frame_time.tv_sec / 1000000, (unsigned long)frame_time.tv_nsec);
+            fprintf(file, "# %s\n", hostname);
             fclose(file);
         }
         pthread_mutex_unlock(&sem_frame);

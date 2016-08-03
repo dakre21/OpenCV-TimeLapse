@@ -6,3 +6,4 @@
 *.md~
 *.o
 gmon.out
+storage/
