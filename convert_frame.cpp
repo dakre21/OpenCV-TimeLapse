@@ -4,13 +4,14 @@
 extern IplImage* frame;
 extern int frame_count;
 Mat rgb_frame;
+char *curr_file;
 
 // Global Mutex declarations
 extern pthread_mutex_t sem_frame;
 extern pthread_mutexattr_t mutex_attr;
 
 // Sleep attributes
-struct timespec sleep_time_conv = {0, 962500000}; // 962.5ms (~30 sec for fps to drop, jitter about +-15ms)
+struct timespec sleep_time_conv = {0, 963000000}; // 963ms (~30 sec for fps to drop, jitter about +-15ms)
 struct timespec remaining_time_conv = {0, 0};
 // Time attributes
 struct timespec start_time_conv = {0, 0}; // Start timestamp for log
@@ -41,6 +42,7 @@ void *CONVERT_FRAME(void *thread_id)
             compression_params.push_back(0);
             cvtColor(bgr_frame, rgb_frame, CV_BGR2RGB); // BGR to RGB PPM ASCII 
             imwrite(file_name, rgb_frame, compression_params);
+            curr_file = file_name;
             pthread_mutex_unlock(&sem_frame);
             cout << frame_count << endl;
         }
