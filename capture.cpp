@@ -18,14 +18,7 @@ using namespace std;
 #define CONVERT_FRAME_ID 4
 #define EDIT_HDR_FRAME_ID 5
 #define COMPRESS_FRAME_ID 6
-#define SAVE_FRAME_ID 7
 #define NUM_THREADS 7
-
-// Global variables
-void *raw_img_buff;
-void *cached_img_buff;
-double sec;
-double nsec;
 
 // Forward declaration of thread attributes 
 pthread_t threads[NUM_THREADS];
@@ -50,7 +43,7 @@ cpu_set_t cpu_set; // Set of cpu sets
 cpu_set_t thread_cpu; 
 
 // Global shared data
-IplImage* frame;
+Mat bgr_frame;
 unsigned int frame_count;
 
 // Global Mutex declarations
@@ -69,13 +62,14 @@ void *CAPTURE_FRAME(void *thread_id)
     CvCapture* capture = cvCreateCameraCapture(0); 
     cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, HRES);
     cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, VRES);
-
+    IplImage* frame;
     while(1)
     {
         // Lock, acquire frame, unlock
         pthread_mutex_lock(&sem_frame);
         frame = cvQueryFrame(capture);
-        cout << frame << endl;
+        // Convert frame from bgr to rgb
+        bgr_frame = cvarrToMat(frame);
         pthread_mutex_unlock(&sem_frame);
         if(!frame) return NULL;
         else {

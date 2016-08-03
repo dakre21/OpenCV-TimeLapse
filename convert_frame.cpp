@@ -1,8 +1,8 @@
 #include "capture.h"
 
 // Global shared data
-extern IplImage* frame;
-extern int frame_count;
+extern Mat bgr_frame;
+extern unsigned int frame_count;
 Mat rgb_frame;
 char *curr_file;
 
@@ -22,10 +22,8 @@ void *CONVERT_FRAME(void *thread_id)
     while(1) 
     {
         idleState(sleep_time_conv, remaining_time_conv, start_time_conv, stop_time_conv);
-        if (frame != NULL)
+        if (!bgr_frame.empty())
         {
-            cout << frame << endl;
-            Mat bgr_frame;
             // Lock, modify frame, unlock
             pthread_mutex_lock(&sem_frame);
             // Add ppm file path
@@ -35,8 +33,6 @@ void *CONVERT_FRAME(void *thread_id)
             sprintf(file_count_str, "%d", frame_count);
             strcat(file_name, file_count_str);
             strcat(file_name, extension);
-            // Convert frame from bgr to rgb
-            bgr_frame = cvarrToMat(frame);
             vector<int> compression_params;
             compression_params.push_back(CV_IMWRITE_PXM_BINARY);
             compression_params.push_back(0);

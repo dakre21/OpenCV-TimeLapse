@@ -3,7 +3,7 @@
 #include <fstream>
 
 // Global shared data
-extern int frame_count;
+extern unsigned int frame_count;
 extern char *curr_file;
 extern struct timespec frame_time;
 // Global Mutex declarations
@@ -17,13 +17,11 @@ struct timespec remaining_time_hdr = {0, 0};
 struct timespec start_time_hdr = {0, 0}; // Start timestamp for log
 struct timespec stop_time_hdr = {0, 0}; // Stop timestamp for log
 
-// File attributes
-FILE *file;
-
 void *EDIT_HDR_FRAME(void *thread_id)
 {
     char hostname[128];
     gethostname(hostname, sizeof(hostname));
+    FILE *file;
     while(1)
     {
         idleState(sleep_time_hdr, remaining_time_hdr, start_time_hdr, stop_time_hdr);
