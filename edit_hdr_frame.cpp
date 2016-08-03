@@ -1,4 +1,5 @@
 #include "capture.h"
+#include <sys/utsname.h>
 #include <fstream>
 
 // Global shared data
@@ -21,6 +22,8 @@ FILE *file;
 
 void *EDIT_HDR_FRAME(void *thread_id)
 {
+    char hostname[128];
+    gethostname(hostname, sizeof(hostname));
     while(1)
     {
         idleState(sleep_time_hdr, remaining_time_hdr, start_time_hdr, stop_time_hdr);
@@ -30,7 +33,8 @@ void *EDIT_HDR_FRAME(void *thread_id)
         if (file != NULL)
         {
             fseek(file, 0, SEEK_SET);
-            fprintf(file, "# Frame @ %u sec, %u msec, %lu nsec\n\n", (unsigned)frame_time.tv_sec, (unsigned)frame_time.tv_sec / 1000000, (unsigned long)frame_time.tv_nsec);
+            //fprintf(file, "# Frame @ %u sec, %u msec, %lu nsec\n", (unsigned)frame_time.tv_sec, (unsigned)frame_time.tv_sec / 1000000, (unsigned long)frame_time.tv_nsec);
+            //fprintf(file, "%s\n", hostname);
             fclose(file);
         }
         pthread_mutex_unlock(&sem_frame);
