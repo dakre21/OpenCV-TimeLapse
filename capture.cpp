@@ -51,6 +51,7 @@ cpu_set_t thread_cpu;
 
 // Global shared data
 IplImage* frame;
+unsigned int frame_count;
 
 // Global Mutex declarations
 pthread_mutex_t sem_frame;
@@ -61,7 +62,7 @@ void *CAPTURE_FRAME(void *thread_id)
 {
     // used to compute running averages for single camera frame rates
     double ave_framedt = 0.0, ave_frame_rate = 0.0, fc = 0.0, framedt = 0.0;
-    unsigned int frame_count = 0;
+    frame_count = 0;
 
     // Set up image capture service
     cvNamedWindow("Motion Detection Time Lapse", CV_WINDOW_AUTOSIZE);
@@ -74,8 +75,9 @@ void *CAPTURE_FRAME(void *thread_id)
         // Lock, acquire frame, unlock
         pthread_mutex_lock(&sem_frame);
         frame = cvQueryFrame(capture);
+        cout << frame << endl;
         pthread_mutex_unlock(&sem_frame);
-        if(!frame) break;
+        if(!frame) return NULL;
         else {
            // Start getting real time timestamps for fps
            clock_gettime(CLOCK_REALTIME, &frame_time);
@@ -97,7 +99,7 @@ void *CAPTURE_FRAME(void *thread_id)
         idleState(sleep_time_cap, remaining_time_cap, start_time_cap, stop_time_cap);
         framedt = curr_frame_time - prev_frame_time;
         prev_frame_time = curr_frame_time;
-        if( c == 27 ) break;
+        if( c == 27 ) return NULL;
     }
 
     cvReleaseCapture(&capture);
