@@ -31,7 +31,7 @@ struct timespec frame_time;
 double curr_frame_time, prev_frame_time;
 
 // Sleep attributes
-struct timespec sleep_time_cap = {0, 962500000}; // 962.5ms (~30 sec for fps to drop, jitter about +-15ms)
+struct timespec sleep_time_cap = {0, 800000000}; // 962.5ms (~30 sec for fps to drop, jitter about +-15ms)
 struct timespec remaining_time_cap = {0, 0};
 // Time attributes
 struct timespec start_time_cap = {0, 0}; // Start timestamp for log
@@ -65,6 +65,7 @@ void *CAPTURE_FRAME(void *thread_id)
     IplImage* frame;
     while(1)
     {
+        getStartTimeLog(start_time_cap, thread_id);
         // Lock, acquire frame, unlock
         pthread_mutex_lock(&sem_frame);
         frame = cvQueryFrame(capture);
@@ -89,7 +90,7 @@ void *CAPTURE_FRAME(void *thread_id)
 
         cvShowImage("Motion Detection Time Lapse", frame);
         printf("Frame @ %u sec, %lu nsec, dt=%5.2lf msec, avedt=%5.2lf msec, rate=%5.2lf fps\n", (unsigned)frame_time.tv_sec, (unsigned long)frame_time.tv_nsec, framedt, ave_framedt, ave_frame_rate);
-
+        getStopTimeLog(stop_time_cap, thread_id);
         char c = cvWaitKey(10);
         idleState(sleep_time_cap, remaining_time_cap, start_time_cap, stop_time_cap, thread_id);
         framedt = curr_frame_time - prev_frame_time;

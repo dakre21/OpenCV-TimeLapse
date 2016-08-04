@@ -11,7 +11,7 @@ extern pthread_mutexattr_t mutex_attr;
 extern bool motion_detected;
 
 // Sleep attributes
-struct timespec sleep_time_comp = {0, 965000000}; // 965ms (~30 sec for fps to drop, jitter about +-15ms)
+struct timespec sleep_time_comp = {0, 840000000}; // 965ms (~30 sec for fps to drop, jitter about +-15ms)
 struct timespec remaining_time_comp = {0, 0};
 // Time attributes
 struct timespec start_time_comp = {0, 0}; // Start timestamp for log
@@ -29,6 +29,7 @@ void *COMPRESS_FRAME(void *thread_id)
     while(1)
     {
         idleState(sleep_time_comp, remaining_time_comp, start_time_comp, stop_time_comp, thread_id);
+        getStartTimeLog(start_time_comp, thread_id);
         if (motion_detected == true)
         {
         // Lock, modify file, unlock
@@ -63,6 +64,7 @@ void *COMPRESS_FRAME(void *thread_id)
             fclose(comp_file);
             gzclose(out_file);
             pthread_mutex_unlock(&sem_frame);
+            getStopTimeLog(stop_time_comp, thread_id);
         }
     }
     return NULL;

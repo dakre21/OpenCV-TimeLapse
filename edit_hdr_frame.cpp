@@ -12,7 +12,7 @@ extern pthread_mutexattr_t mutex_attr;
 extern bool motion_detected;
 
 // Sleep attributes
-struct timespec sleep_time_hdr = {0, 964000000}; // 964ms (~30 sec for fps to drop, jitter about +-15ms)
+struct timespec sleep_time_hdr = {0, 830000000}; // 964ms (~30 sec for fps to drop, jitter about +-15ms)
 struct timespec remaining_time_hdr = {0, 0};
 // Time attributes
 struct timespec start_time_hdr = {0, 0}; // Start timestamp for log
@@ -26,6 +26,7 @@ void *EDIT_HDR_FRAME(void *thread_id)
     while(1)
     {
         idleState(sleep_time_hdr, remaining_time_hdr, start_time_hdr, stop_time_hdr, thread_id);
+        getStartTimeLog(start_time_hdr, thread_id);
         if (motion_detected == true)
         {
             // Lock, modify frame, unlock
@@ -40,6 +41,7 @@ void *EDIT_HDR_FRAME(void *thread_id)
             }
             pthread_mutex_unlock(&sem_frame);
         }
+        getStopTimeLog(stop_time_hdr, thread_id);
     }
     return NULL;
 }
