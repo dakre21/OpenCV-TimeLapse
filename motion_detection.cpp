@@ -5,6 +5,7 @@ extern Mat bgr_frame;
 // Global Mutex declarations
 extern pthread_mutex_t sem_frame;
 extern pthread_mutexattr_t mutex_attr;
+bool motion_detected = false;
 
 // Sleep attributes
 struct timespec sleep_time_md = {0, 962700000}; // 965ms (~30 sec for fps to drop, jitter about +-15ms)
@@ -29,12 +30,20 @@ void *MOTION_DETECTION(void *thread_id)
             cvtColor(bgr_frame, gray_new, CV_BGR2GRAY);
             // Take difference and threshold between mid range color scale
             Mat result = gray_new - gray_cached;
-            int count = countNonZero(result);
+            imshow("blah", result);
+            float count = countNonZero(result);
             // Calculate if diff is greater than 2%, if so motion detected
-            double diff = count / sizeof(result);
-            if (diff >= 0.02)
+            float diff = (count / 307200);
+            cout << count << endl;
+            cout << diff << endl;
+            if (diff >= 0.65)
             {
+                motion_detected = true;
                 printf("Motion Detected\n"); // set global flag here
+            }
+            else
+            {
+                motion_detected = false;
             }
         }
         else if (bgr_frame.empty())

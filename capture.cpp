@@ -70,6 +70,7 @@ void *CAPTURE_FRAME(void *thread_id)
         frame = cvQueryFrame(capture);
         // Convert frame from bgr to rgb
         bgr_frame = cvarrToMat(frame);
+        cout << frame_count << endl;
         pthread_mutex_unlock(&sem_frame);
         if(!frame) return NULL;
         else {
