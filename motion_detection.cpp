@@ -44,7 +44,7 @@ void *MOTION_DETECTION(void *thread_id)
         }
         else 
         {
-            // Set cached frame to bgr frame
+            // Set cached frame to bgr frame.. clone to copyTo function call to copy pixels not memory location
             cached_frame = bgr_frame.clone();
         }
         pthread_mutex_unlock(&sem_frame);

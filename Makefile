@@ -25,7 +25,7 @@ distclean:
 	-rm -f *.o *.d
 
 capture: ${CPPOBJS}
-	$(CC) $(LDFLAGS) $(CFLAGS) $(LINK) -o $@ $@.o `pkg-config --libs opencv` $(CPPLIBS)
+	$(CC) $(LDFLAGS) $(CFLAGS) $(LINK) -lz -o $@ $@.o `pkg-config --libs opencv` $(CPPLIBS)
 
 depend:
 
