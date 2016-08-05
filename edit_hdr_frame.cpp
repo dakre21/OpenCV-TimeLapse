@@ -12,7 +12,8 @@ extern pthread_mutexattr_t mutex_attr;
 extern bool motion_detected;
 
 // Sleep attributes
-struct timespec sleep_time_hdr = {0, 830000000}; // 964ms (~30 sec for fps to drop, jitter about +-15ms)
+// struct timespec sleep_time_hdr = {0, 900000000}; // 964ms (~30 sec for fps to drop, jitter about +-15ms)
+struct timespec sleep_time_hdr = {0, 850000000}; // 964ms (~30 sec for fps to drop, jitter about +-15ms)
 struct timespec remaining_time_hdr = {0, 0};
 // Time attributes
 struct timespec start_time_hdr = {0, 0}; // Start timestamp for log

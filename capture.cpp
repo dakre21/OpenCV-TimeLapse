@@ -2,6 +2,10 @@
  *  Lab 6: Motion Detection Time Lapse 
  *  Author: David Akre 
  *  Date: 7/31/16
+ *  Note: Default execution includes motion detection and compression functionality.
+ *  To get 1Hz predictable response uncomment out sleep times, motion detection
+ *  and compression services; as well as flipping the global motion detected flag to
+ *  false
  */
 #include "capture.h"
 
@@ -31,7 +35,8 @@ struct timespec frame_time;
 double curr_frame_time, prev_frame_time;
 
 // Sleep attributes
-struct timespec sleep_time_cap = {0, 800000000}; // 962.5ms (~30 sec for fps to drop, jitter about +-15ms)
+//struct timespec sleep_time_cap = {0, 768000000}; // 962.5ms (~30 sec for fps to drop, jitter about +-15ms)
+struct timespec sleep_time_cap = {0, 668000000}; // 962.5ms (~30 sec for fps to drop, jitter about +-15ms)
 struct timespec remaining_time_cap = {0, 0};
 // Time attributes
 struct timespec start_time_cap = {0, 0}; // Start timestamp for log

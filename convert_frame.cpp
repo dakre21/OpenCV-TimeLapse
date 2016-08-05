@@ -12,7 +12,8 @@ extern pthread_mutex_t sem_frame;
 extern pthread_mutexattr_t mutex_attr;
 
 // Sleep attributes
-struct timespec sleep_time_conv = {0, 820000000}; // 963ms (~30 sec for fps to drop, jitter about +-15ms)
+//struct timespec sleep_time_conv = {0, 800000000}; // 963ms (~30 sec for fps to drop, jitter about +-15ms)
+struct timespec sleep_time_conv = {0, 800000000}; // 963ms (~30 sec for fps to drop, jitter about +-15ms)
 struct timespec remaining_time_conv = {0, 0};
 // Time attributes
 struct timespec start_time_conv = {0, 0}; // Start timestamp for log
@@ -40,8 +41,8 @@ void *CONVERT_FRAME(void *thread_id)
                 vector<int> compression_params;
                 compression_params.push_back(CV_IMWRITE_PXM_BINARY);
                 compression_params.push_back(0);
-                cvtColor(bgr_frame, rgb_frame, CV_BGR2RGB); // BGR to RGB PPM ASCII 
-                imwrite(file_name, rgb_frame, compression_params);
+                //cvtColor(bgr_frame, rgb_frame, CV_BGR2RGB); // BGR to RGB PPM ASCII 
+                imwrite(file_name, bgr_frame, compression_params);
                 curr_file = file_name;
                 pthread_mutex_unlock(&sem_frame);
             }

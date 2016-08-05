@@ -8,7 +8,8 @@ extern pthread_mutexattr_t mutex_attr;
 bool motion_detected = false;
 
 // Sleep attributes
-struct timespec sleep_time_md = {0, 810000000}; // 965ms (~30 sec for fps to drop, jitter about +-15ms)
+//struct timespec sleep_time_md = {0, 810000000}; // 965ms (~30 sec for fps to drop, jitter about +-15ms)
+struct timespec sleep_time_md = {0, 710000000}; // 965ms (~30 sec for fps to drop, jitter about +-15ms)
 struct timespec remaining_time_md = {0, 0};
 // Time attributes
 struct timespec start_time_md = {0, 0}; // Start timestamp for log
@@ -31,12 +32,12 @@ void *MOTION_DETECTION(void *thread_id)
             cvtColor(bgr_frame, gray_new, CV_BGR2GRAY);
             // Take difference and threshold between mid range color scale
             Mat result = gray_new - gray_cached;
-            //imshow("blah", result);
+            //imshow("Grayscale Difference", result);
             float count = countNonZero(result);
             // Calculate if diff is greater than 2%, if so motion detected
             float diff = (count / 307200);
-            cout << count << endl;
-            cout << diff << endl;
+            //cout << count << endl;
+            //cout << diff << endl;
             if (diff >= 0.30)
             {
                 motion_detected = true;
